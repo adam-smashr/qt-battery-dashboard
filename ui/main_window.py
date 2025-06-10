@@ -42,11 +42,13 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QApplication,
+    QLCDNumber,
     QMainWindow,
     QMenuBar,
     QPushButton,
     QSizePolicy,
     QStatusBar,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -55,25 +57,29 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(368, 300)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.lcdNumber = QLCDNumber(self.centralwidget)
+        self.lcdNumber.setObjectName("lcdNumber")
+
+        self.verticalLayout.addWidget(self.lcdNumber)
+
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName("pushButton")
-        self.pushButton.setGeometry(QRect(280, 200, 75, 24))
-        self.pushButton_2 = QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_2.setGeometry(QRect(340, 400, 75, 24))
-        self.pushButton_3 = QPushButton(self.centralwidget)
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.pushButton_3.setGeometry(QRect(220, 270, 75, 24))
+
+        self.verticalLayout.addWidget(self.pushButton)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 33))
+        self.menubar.setGeometry(QRect(0, 0, 368, 33))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
+        self.statusbar.setEnabled(True)
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
@@ -87,13 +93,7 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "MainWindow", None)
         )
         self.pushButton.setText(
-            QCoreApplication.translate("MainWindow", "PushButton", None)
-        )
-        self.pushButton_2.setText(
-            QCoreApplication.translate("MainWindow", "PushButton", None)
-        )
-        self.pushButton_3.setText(
-            QCoreApplication.translate("MainWindow", "PushButton", None)
+            QCoreApplication.translate("MainWindow", "Connect", None)
         )
 
     # retranslateUi
