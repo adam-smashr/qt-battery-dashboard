@@ -1,46 +1,37 @@
 import serial
 import time
-from typing import Any, Self
-import timeit
-from enum import Enum
+from PySide6.QtCore import Signal, QThread
+from utils.type_utilities import BaudRate, Voltage
 
 
-class BaudRate(Enum):
-    """BaudRates used by BK Precision 5492C"""
+class SerialWorker(QThread):
+    voltage_ready = Signal(Voltage)
 
-    BR_4800 = 4800
-    BR_9600 = 9600
-    BR_19200 = 19200
-    BR_38400 = 38400
-    BR_57600 = 57600
-    BR_115200 = 115200
+    def __init__(self, port, timeout: float, baudrate: BaudRate) -> None:  # type: ignore
+        super().__init__()
+        self.device = BKPrecision_5492C(port, timeout, baudrate)
+        self.running = True
 
+    def run(self) -> None:
+        while self.running:
+            voltage = self.device.query_voltage()
+            print(voltage)
+            self.voltage_ready.emit(voltage)
+            self.msleep(10)
 
-class Voltage(float):
-    """
-    class for handling output of digitla multimeter.
-    rounds given float value to one decimal when created
-    implements __str__ to keep # of digits consistent because floats
-        leave off trailing zeroes
-    """
-
-    precision = 1
-
-    def __new__(cls, value: float) -> "Voltage":
-        return super().__new__(cls, round(value, cls.precision))
-
-    def __str__(self) -> str:
-        return f"{self:.{self.precision}f}"
+    def stop(self) -> None:
+        self.running = False
+        self.wait()
 
 
 class BKPrecision_5492C:
     """serial library for BKPrecision_5492C."""
 
     def __init__(self, port: str, timeout: float, baudrate: BaudRate) -> None:
+        """connect to and configure multimeter"""
+        print("constructor called")
         self.serial = serial.Serial(port=port, timeout=timeout, baudrate=baudrate.value)
 
-    def __enter__(self) -> Self:
-        """set up device for measuring voltage"""
         self._write_command("*RST")
         self._write_command("SENS:VOLT:DC:NPLC 0.01")
         self._write_command("TRIG:SOUR IMM")
@@ -49,12 +40,27 @@ class BKPrecision_5492C:
         self._write_command("INIT")
         time.sleep(3)
 
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
-        """teardown when finished."""
+    def __del__(self) -> None:
+        """clean up"""
         self._write_command("*RST")
         self._write_command("LOC")
+
+    # def __enter__(self) -> "BKPrecision_5492C":
+    #     """set up device for measuring voltage"""
+    #     self._write_command("*RST")
+    #     self._write_command("SENS:VOLT:DC:NPLC 0.01")
+    #     self._write_command("TRIG:SOUR IMM")
+    #     self._write_command("TRIG:COUN 1")
+    #     self._write_command("SAMP:COUN 1")
+    #     self._write_command("INIT")
+    #     time.sleep(3)
+
+    #     return self
+
+    # def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
+    #     """teardown when finished."""
+    #     self._write_command("*RST")
+    #     self._write_command("LOC")
 
     def query_voltage(self) -> Voltage:
         """return value from the stream of data & return zero if it doesn't exist"""
@@ -90,13 +96,14 @@ class BKPrecision_5492C:
 
 
 if __name__ == "__main__":
-    with BKPrecision_5492C("com8", 0.1, baudrate=BaudRate.BR_57600) as dmm:
 
-        # Benchmark
-        start = time.perf_counter()
-        for _ in range(100):
-            voltage = dmm.query_voltage()
-            print(voltage)
-        end = time.perf_counter()
+    dmm = BKPrecision_5492C("com8", 0.1, baudrate=BaudRate.BR_57600)
 
-        print(f"Avg time per call: {(end - start)/100:.6f}s")
+    # Benchmark
+    start = time.perf_counter()
+    for _ in range(100):
+        voltage = dmm.query_voltage()
+        print(voltage)
+    end = time.perf_counter()
+
+    print(f"Avg time per call: {(end - start)/100:.6f}s")

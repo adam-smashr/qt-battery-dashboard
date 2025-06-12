@@ -1,14 +1,24 @@
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QMainWindow
 from ui import main_window
+from serial_operations.serial_manager import SerialWorker
+from utils.type_utilities import Voltage, BaudRate
 
 
 class MainWindow(QMainWindow):
+
     def __init__(self) -> None:
         super().__init__()
         self.ui = main_window.Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self.setup_connections()
+        self.ui.lcdNumber.setSmallDecimalPoint(True)
+        self.ui.pushButton.clicked.connect(self.handle_connection)
 
-    def setup_connections(self) -> None:
-        pass
-        # self.ui.pushButton_2.clicked.connect(lambda: print(3))
+    def handle_connection(self) -> None:
+        self.worker = SerialWorker("com8", 0.1, BaudRate.BR_115200)
+        self.worker.voltage_ready.connect(self.update_lcd)
+        self.worker.start()
+
+    @Slot(Voltage)
+    def update_lcd(self, value: Voltage) -> None:
+        self.ui.lcdNumber.display(str(value))
