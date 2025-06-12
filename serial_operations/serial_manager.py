@@ -89,9 +89,13 @@ class BKPrecision_5492C:
         """
         response = self.serial.read_until(b"").strip()
         if response:
-            split = response.split(b"\r\n")
-            decoded = split[-1].decode()
-            return decoded
+            try:
+                split = response.split(b"\r\n")
+                decoded = split[-1].decode()
+                return decoded
+            except UnicodeDecodeError:
+                print("Failed to decode response: ", response)
+                return ""
         return ""
 
 
