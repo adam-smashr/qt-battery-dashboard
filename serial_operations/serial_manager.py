@@ -10,9 +10,10 @@ class SerialWorker(QThread):
     def __init__(self, port: str, timeout: float, baudrate: BaudRate) -> None:
         super().__init__()
         self.device = BKPrecision_5492C(port, timeout, baudrate)
-        self.running = True
+        self.running = False
 
     def run(self) -> None:
+        self.running = True
         while self.running:
             voltage = self.device.query_voltage()
             print(voltage)
