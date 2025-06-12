@@ -1,4 +1,4 @@
-from serial_operations import serial_manager
+# from serial_operations import serial_manager
 
 
 # def test_read_voltage() -> None:

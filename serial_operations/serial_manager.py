@@ -7,7 +7,7 @@ from utils.type_utilities import BaudRate, Voltage
 class SerialWorker(QThread):
     voltage_ready = Signal(Voltage)
 
-    def __init__(self, port, timeout: float, baudrate: BaudRate) -> None:  # type: ignore
+    def __init__(self, port: str, timeout: float, baudrate: BaudRate) -> None:
         super().__init__()
         self.device = BKPrecision_5492C(port, timeout, baudrate)
         self.running = True
@@ -89,13 +89,9 @@ class BKPrecision_5492C:
         """
         response = self.serial.read_until(b"").strip()
         if response:
-            try:
-                split = response.split(b"\r\n")
-                decoded = split[-1].decode()
-                return decoded
-            except UnicodeDecodeError:
-                print("Failed to decode response: ", response)
-                return ""
+            split = response.split(b"\r\n")
+            decoded = split[-1].decode()
+            return decoded
         return ""
 
 

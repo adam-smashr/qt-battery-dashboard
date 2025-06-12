@@ -14,7 +14,7 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Type check
-        run: mypy .
+        run: mypy . -v
       - name: Lint
         run: flake8 .
       - name: Run tests
