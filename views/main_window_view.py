@@ -2,7 +2,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QMainWindow
 from ui import main_window
 from serial_operations.serial_manager import SerialWorker
-from utils.type_utilities import Voltage, BaudRate
+from utils.type_utilities import VoltageStatistics, BaudRate
 
 
 class MainWindow(QMainWindow):
@@ -11,7 +11,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = main_window.Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self.ui.lcdNumber.setSmallDecimalPoint(True)
+        # self.ui.lcdNumber.setSmallDecimalPoint(True)
         self.setup_connections()
 
     def setup_connections(self) -> None:
@@ -33,6 +33,8 @@ class MainWindow(QMainWindow):
                 "color: #f0dfaf; background-color: #c28f02"
             )
 
-    @Slot(Voltage)
-    def update_lcd(self, value: Voltage) -> None:
-        self.ui.lcdNumber.display(str(value))
+    @Slot(VoltageStatistics)
+    def update_lcd(self, voltage: VoltageStatistics) -> None:
+        self.ui.lcdRMS.display(str(voltage.v_rms))
+        self.ui.lcdMin.display(str(voltage.v_min))
+        self.ui.lcdMax.display(str(voltage.v_max))
